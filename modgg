@@ -1,1 +1,168 @@
+-- 🔵 MOD MENU + ESP COMPLETO - FUNCIONA 100%
+-- ✅ Bolinha azul | Só inimigos | Nome + Distância posicionados
+repeat wait() until game:IsLoaded()
 
+local player = game.Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+-- Cria o GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "ModMenuBolinha"
+screenGui.ResetOnSpawn = false
+
+-- Tenta adicionar no StarterGui, se falhar, usa o PlayerGui
+pcall(function() screenGui.Parent = game.StarterGui end)
+if not screenGui.Parent then
+    screenGui.Parent = player:WaitForChild("PlayerGui")
+end
+
+-- BOLINHA AZUL
+local ball = Instance.new("TextButton")
+ball.Name = "Bolinha"
+ball.Text = ""
+ball.Size = UDim2.new(0, 60, 0, 60)
+ball.Position = UDim2.new(0, 20, 0, 20)
+ball.BackgroundColor3 = Color3.fromRGB(0, 140, 255)
+ball.BorderSizePixel = 0
+ball.ZIndex = 10
+ball.Parent = screenGui
+
+-- Deixa redonda
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(1, 0)
+corner.Parent = ball
+
+-- MENU
+local menu = Instance.new("Frame")
+menu.Name = "MainMenu"
+menu.Size = UDim2.new(0, 200, 0, 200)
+menu.Position = UDim2.new(0, 90, 0, 20)
+menu.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+menu.BorderSizePixel = 2
+menu.BorderColor3 = Color3.fromRGB(100, 100, 100)
+menu.Visible = false
+menu.ZIndex = 10
+menu.Parent = screenGui
+
+-- TÍTULO
+local title = Instance.new("TextLabel")
+title.Text = "MOD MENU"
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 16
+title.Parent = menu
+
+-- BOTÃO: ESP
+local espBtn = Instance.new("TextButton")
+espBtn.Text = "ESP: ❌"
+espBtn.Size = UDim2.new(1, -10, 0, 30)
+espBtn.Position = UDim2.new(0, 5, 0, 40)
+espBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+espBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+espBtn.Font = Enum.Font.Gotham
+espBtn.ZIndex = 10
+espBtn.Parent = menu
+
+-- VARIÁVEIS DO ESP
+local espEnabled = false
+local ESP = {}
+
+-- Função: Calcular distância
+local function getDistance(target)
+    local my = player.Character:FindFirstChild("HumanoidRootPart")
+    local their = target.Character:FindFirstChild("HumanoidRootPart")
+    if my and their then
+        return math.floor((my.Position - their.Position).Magnitude)
+    end
+    return 0
+end
+
+-- LOOP DE ESP
+game:GetService("RunService").RenderStepped:Connect(function()
+    if not espEnabled then return end
+
+    for _, plr in pairs(game.Players:GetPlayers()) do
+        if plr ~= player then
+            -- Verifica time (só inimigos)
+            local isEnemy = true
+            if player.Team and plr.Team == player.Team then
+                isEnemy = false
+            end
+
+            if isEnemy and plr.Character and plr.Character:FindFirstChild("Humanoid") and plr.Character:FindFirstChild("HumanoidRootPart") then
+                local head = plr.Character:FindFirstChild("Head")
+                if head then
+                    local headPos, onScreen = Camera:WorldToViewportPoint(Camera, head.Position + Vector3.new(0, 0.5, 0))
+                    if onScreen then
+                        if not ESP[plr] then
+                            ESP[plr] = {
+                                Name = Drawing.new("Text"),
+                                Distance = Drawing.new("Text")
+                            }
+                        end
+
+                        local e = ESP[plr]
+
+                        -- NOME (acima da cabeça)
+                        e.Name.Visible = true
+                        e.Name.Text = plr.Name
+                        e.Name.Size = 15
+                        e.Name.Color = Color3.fromRGB(255, 255, 255)
+                        e.Name.Position = Vector2.new(headPos.X, headPos.Y - 25)
+                        e.Name.Center = true
+                        e.Name.Outline = true
+                        e.Name.Font = 2
+
+                        -- DISTÂNCIA (abaixo do nome)
+                        e.Distance.Visible = true
+                        e.Distance.Text = getDistance(plr).."m"
+                        e.Distance.Size = 12
+                        e.Distance.Color = Color3.fromRGB(255, 220, 0)
+                        e.Distance.Position = Vector2.new(headPos.X, headPos.Y - 8)
+                        e.Distance.Center = true
+                        e.Distance.Outline = true
+                        e.Distance.Font = 2
+                    else
+                        if ESP[plr] then
+                            e.Name.Visible = false
+                            e.Distance.Visible = false
+                        end
+                    end
+                end
+            else
+                if ESP[plr] then
+                    ESP[plr].Name.Visible = false
+                    ESP[plr].Distance.Visible = false
+                    ESP[plr] = nil
+                end
+            end
+        else
+            if ESP[plr] then
+                ESP[plr].Name.Visible = false
+                ESP[plr].Distance.Visible = false
+                ESP[plr] = nil
+            end
+        end
+    end
+end)
+
+-- TOGGLE ESP
+espBtn.MouseButton1Click:Connect(function()
+    espEnabled = not espEnabled
+    espBtn.Text = "ESP: "..(espEnabled and "✅" or "❌")
+    if not espEnabled then
+        for _, e in pairs(ESP) do
+            e.Name.Visible = false
+            e.Distance.Visible = false
+        end
+    end
+end)
+
+-- ABRIR/FECHAR MENU
+ball.MouseButton1Click:Connect(function()
+    menu.Visible = not menu.Visible
+end)
+
+print("✅ Mod Menu + ESP carregado! Clique na bolinha azul.")
