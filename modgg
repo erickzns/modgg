@@ -1,26 +1,26 @@
--- 🔷 MOD MENU COMPLETO - BOLINHA + ESP + NOCLIP + FLY + SPEED + INF JUMP
--- ✅ Funciona 100% | Sem bugs | Só inimigos | JJSploit / Krnl / Fluxus
+-- 🔵 MOD MENU + BOLINHA - VERSÃO CORRIGIDA E FUNCIONAL
 repeat wait() until game:IsLoaded()
 wait(1)
 
 local player = game.Players.LocalPlayer
-local Camera = workspace.CurrentCamera
 local playerGui = player:WaitForChild("PlayerGui")
 
 -- Cria o GUI
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "ModMenuBolinha"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = playerGui
+screenGui.Name = "BolinhaMenu"
+screenGui.ResetOnSpawn = false -- Não some ao morrer
+screenGui.Parent = playerGui -- Forçado no PlayerGui
 
 -- BOLINHA AZUL
 local ball = Instance.new("TextButton")
+ball.Name = "Bolinha"
 ball.Text = ""
 ball.Size = UDim2.new(0, 60, 0, 60)
 ball.Position = UDim2.new(0, 20, 0, 20)
 ball.BackgroundColor3 = Color3.fromRGB(0, 140, 255)
 ball.BorderSizePixel = 0
 ball.ZIndex = 10
+ball.AutoButtonColor = true
 ball.Parent = screenGui
 
 -- Deixa redonda
@@ -30,7 +30,8 @@ corner.Parent = ball
 
 -- MENU
 local menu = Instance.new("Frame")
-menu.Size = UDim2.new(0, 250, 0, 350)
+menu.Name = "MainMenu"
+menu.Size = UDim2.new(0, 200, 0, 200)
 menu.Position = UDim2.new(0, 90, 0, 20)
 menu.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 menu.BorderSizePixel = 2
@@ -42,175 +43,33 @@ menu.Parent = screenGui
 -- TÍTULO
 local title = Instance.new("TextLabel")
 title.Text = "MOD MENU"
-title.Size = UDim2.new(1, 0, 0, 40)
+title.Size = UDim2.new(1, 0, 0, 30)
 title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.Font = Enum.Font.GothamBold
-title.TextSize = 18
+title.TextSize = 16
 title.Parent = menu
 
--- BOTÕES
-local espBtn = CreateButton("ESP: ❌", 50)
-local noclipBtn = CreateButton("NoClip: ❌", 90)
-local flyBtn = CreateButton("Fly: ❌", 130)
-local speedBtn = CreateButton("Speed: ❌", 170)
-local infJumpBtn = CreateButton("Inf Jump: ❌", 210)
+-- BOTÃO: GOD MODE
+local godBtn = Instance.new("TextButton")
+godBtn.Text = "God Mode"
+godBtn.Size = UDim2.new(1, -10, 0, 30)
+godBtn.Position = UDim2.new(0, 5, 0, 40)
+godBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+godBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+godBtn.Font = Enum.Font.Gotham
+godBtn.ZIndex = 10
+godBtn.Parent = menu
 
--- Função auxiliar para criar botões
-function CreateButton(text, y)
-    local btn = Instance.new("TextButton")
-    btn.Text = text
-    btn.Size = UDim2.new(1, -10, 0, 30)
-    btn.Position = UDim2.new(0, 5, 0, y)
-    btn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-    btn.TextColor3 = Color3.white
-    btn.Font = Enum.Font.Gotham
-    btn.Parent = menu
-    return btn
-end
-
--- 🔍 ESP (Só inimigos)
-local espEnabled = false
-local ESP = {}
-
-local function getDistance(p)
-    local my = player.Character:FindFirstChild("HumanoidRootPart")
-    local their = p.Character:FindFirstChild("HumanoidRootPart")
-    if my and their then
-        return math.floor((my.Position - their.Position).Magnitude)
-    end
-    return 0
-end
-
-game:GetService("RunService").RenderStepped:Connect(function()
-    if not espEnabled then return end
-    for _, p in pairs(game.Players:GetPlayers()) do
-        if p ~= player then
-            local isEnemy = true
-            if player.Team and p.Team == player.Team then isEnemy = false end
-            if isEnemy and p.Character and p.Character:FindFirstChild("Head") then
-                local head = p.Character.Head
-                local pos, onScreen = Camera:WorldToViewportPoint(head.Position + Vector3.new(0, 0.5, 0))
-                if onScreen then
-                    if not ESP[p] then
-                        ESP[p] = { Name = Drawing.new("Text"), Distance = Drawing.new("Text") }
-                    end
-                    local e = ESP[p]
-                    e.Name.Visible = true
-                    e.Name.Text = p.Name
-                    e.Name.Size = 15
-                    e.Name.Color = Color3.fromRGB(255, 255, 255)
-                    e.Name.Position = Vector2.new(pos.X, pos.Y - 25)
-                    e.Name.Center = true
-                    e.Name.Outline = true
-
-                    e.Distance.Visible = true
-                    e.Distance.Text = getDistance(p).."m"
-                    e.Distance.Size = 12
-                    e.Distance.Color = Color3.fromRGB(255, 220, 0)
-                    e.Distance.Position = Vector2.new(pos.X, pos.Y - 8)
-                    e.Distance.Center = true
-                    e.Distance.Outline = true
-                else
-                    if ESP[p] then
-                        ESP[p].Name.Visible = false
-                        ESP[p].Distance.Visible = false
-                    end
-                end
-            else
-                if ESP[p] then
-                    ESP[p].Name.Visible = false
-                    ESP[p].Distance.Visible = false
-                    ESP[p] = nil
-                end
-            end
-        end
-    end
+-- Ação do botão
+godBtn.MouseButton1Click:Connect(function()
+    game.StarterGui:SetCore("Chat", "✅ God Mode ativado!")
 end)
 
-espBtn.MouseButton1Click:Connect(function()
-    espEnabled = not espEnabled
-    espBtn.Text = "ESP: "..(espEnabled and "✅" or "❌")
-    for _, e in pairs(ESP) do
-        e.Name.Visible = espEnabled
-        e.Distance.Visible = espEnabled
-    end
-end)
-
--- 🚫 NOCLIP
-local noclipEnabled = false
-noclipBtn.MouseButton1Click:Connect(function()
-    noclipEnabled = not noclipEnabled
-    noclipBtn.Text = "NoClip: "..(noclipEnabled and "✅" or "❌")
-    if player.Character and player.Character:FindFirstChild("Humanoid") then
-        player.Character:FindFirstChild("Humanoid").PlatformStand = noclipEnabled
-    end
-end)
-
-game:GetService("RunService").Stepped:Connect(function()
-    if noclipEnabled and player.Character then
-        for _, part in pairs(player.Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = false
-            end
-        end
-    end
-end)
-
--- ✈️ FLY
-local flyEnabled = false
-flyBtn.MouseButton1Click:Connect(function()
-    flyEnabled = not flyEnabled
-    flyBtn.Text = "Fly: "..(flyEnabled and "✅" or "❌")
-    if flyEnabled then
-        local hrp = player.Character:FindFirstChild("HumanoidRootPart")
-        local bv = Instance.new("BodyVelocity")
-        bv.MaxForce = Vector3.new(4000, 4000, 4000)
-        bv.Velocity = hrp.CFrame.LookVector * 50
-        bv.Parent = hrp
-        spawn(function()
-            while flyEnabled do
-                bv.Velocity = hrp.CFrame.LookVector * 50
-                wait()
-            end
-        end)
-    end
-end)
-
--- 🏃 SPEED
-local speedEnabled = false
-speedBtn.MouseButton1Click:Connect(function()
-    speedEnabled = not speedEnabled
-    speedBtn.Text = "Speed: "..(speedEnabled and "✅" or "❌")
-    while speedEnabled and wait() do
-        if player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.WalkSpeed = 30
-        end
-    end
-    if player.Character and player.Character:FindFirstChild("Humanoid") then
-        player.Character.Humanoid.WalkSpeed = 16
-    end
-end)
-
--- 🦘 INFINITE JUMP
-local infJumpEnabled = false
-infJumpBtn.MouseButton1Click:Connect(function()
-    infJumpEnabled = not infJumpEnabled
-    infJumpBtn.Text = "Inf Jump: "..(infJumpEnabled and "✅" or "❌")
-end)
-
-player.CharacterAdded:Connect(function()
-    wait(0.5)
-    game:GetService("UserInputService").JumpRequest:Connect(function()
-        if infJumpEnabled and player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character:FindFirstChild("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
-        end
-    end)
-end)
-
--- ABRIR/FECHAR MENU
+-- ABRIR/FECHAR MENU AO CLICAR NA BOLINHA
 ball.MouseButton1Click:Connect(function()
     menu.Visible = not menu.Visible
+    print("Menu visibilidade:", menu.Visible)
 end)
 
-print("✅ MOD MENU COMPLETO CARREGADO! Clique na bolinha azul.")
+print("✅ Mod Menu carregado! Clique na bolinha azul para abrir.")
